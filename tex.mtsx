@@ -1,0 +1,83 @@
+{
+    name: ["TeX (LaTeX, etc.)", ".tex"]
+    styles: [
+        "brace", #6E59D9, #9383E2
+        "escaped", #3F6EC6, #6791E0, @B
+        "bracket", #707070, #8F919A
+        // "theory", #36464E#F5F5F5, #B6B9C3#272A35 @U
+    ]
+    comment: {startsWith: "%", addToContains: false}
+    defines: [
+        "special_characters": /[#$%^&_{}~\\]/
+        // "unescaping": {match: {include: "special_characters"}}
+        // "escaping": {match: /\\/ + include("special_characters"), 0:"default"}
+        "comment": {match: /(?<!\\)%.*?\n/, 0:"comment"}
+        "new_line": {match: /\\\\(?!\n)/, 0:"escaped"}
+        // "valid_escaper": /(?<!\\)\\/
+        //unused
+        "special_function_name": keywordsToRegex("start end ")
+        "function_[]": {
+            start: {match: /(?<=\w)\[/}
+            end: {match: /\]/}
+            style: "bracket"
+            childrenStyle: "default"
+            contains: [
+                {match: /\\\]/}
+            ]
+        }
+        "function_{}": {
+            start: {match: /(?<=\w|\]|\})\{/}
+            end: {match: /\}/}
+            style: "brace"
+            childrenStyle: "default"
+            contains: [
+                {match: /\\\}/}
+                {
+                    start: {match: /(?<!\\)\{/}
+                    end: {match: /(?<!\\)\}/}
+                    contains: [{include: "all"}]
+                }
+                {include: "all"}
+            ]
+        }
+        "function_head": {match: /\\\w+?(?=\W)/, 0: "escaped"}
+        "function_body": {
+            group: link
+            contains: [
+                {
+                    group: select
+                    contains: [
+                        {include: "function_[]"}
+                        {include: "function_{}"}
+                    ]
+                }
+                {include: "function_{}"}
+            ]
+        }
+        "function": {
+            group: link
+            contains: [
+                {include: "function_head"}
+                {include: "function_body"}
+            ]
+        }
+        "theory": {
+            start: {match: /(?<!\\)\$\$?/}
+            end: {match: /(?<!\\)\$\$?/}
+            style: "brace"
+            childrenStyle: "default"
+            contains: [
+                {include: "function"}
+                {include: "new_line"}
+                {include: "comment"}
+            ]
+        }
+        "all": [
+            {include: "function"}
+            {include: "new_line"}
+            {include: "comment"}
+            {include: "theory"}
+        ]
+    ]
+    contains: [{include: "all"}]
+}
