@@ -4,7 +4,7 @@
         "brace", #6E59D9, #9383E2
         "escaped", #3F6EC6, #6791E0, @B
         "bracket", #707070, #8F919A
-        // "theory", #36464E#F5F5F5, #B6B9C3#272A35 @U
+        "theory", #36464E#F5F5F5, #B6B9C3#272A35 @U
     ]
     comment: {startsWith: "%", addToContains: false}
     defines: [
@@ -62,10 +62,24 @@
             ]
         }
         "theory": {
-            start: {match: /(?<!\\)\$\$?/}
-            end: {match: /(?<!\\)\$\$?/}
+            start: {
+                group: select
+                contains: [
+                    {match: /(?<!\\)\$\$?/}
+                    {match: /\\\(/}
+                    {match: /\\\[/}
+                ]
+            }
+            end: {
+                group: select
+                contains: [
+                    {match: /(?<!\\)\$\$?/}
+                    {match: /\\\)/}
+                    {match: /\\\]/}
+                ]
+            }
             style: "brace"
-            childrenStyle: "default"
+            childrenStyle: "theory"
             contains: [
                 {include: "function"}
                 {include: "new_line"}
