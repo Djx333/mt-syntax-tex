@@ -15,8 +15,8 @@
         "new_line": {match: /\\\\(?!\n)/, 0:"escaped"}
         // "valid_escaper": /(?<!\\)\\/
         //unused
-        "special_function_name": keywordsToRegex("start end ")
-        "function_[]": {
+        "special_command_name": keywordsToRegex("start end ")
+        "command_[]": {
             start: {match: /(?<=\w)\[/}
             end: {match: /\]/}
             style: "bracket"
@@ -25,7 +25,7 @@
                 {match: /\\\]/}
             ]
         }
-        "function_{}": {
+        "command_{}": {
             start: {match: /(?<=\w|\]|\})\{/}
             end: {match: /\}/}
             style: "brace"
@@ -40,25 +40,25 @@
                 {include: "all"}
             ]
         }
-        "function_head": {match: /\\\w+?(?=\W)/, 0: "escaped"}
-        "function_body": {
+        "command_head": {match: /\\\w+?(?=\W)/, 0: "escaped"}
+        "command_body": {
             group: link
             contains: [
                 {
                     group: select
                     contains: [
-                        {include: "function_[]"}
-                        {include: "function_{}"}
+                        {include: "command_[]"}
+                        {include: "command_{}"}
                     ]
                 }
-                {include: "function_{}"}
+                {include: "command_{}"}
             ]
         }
-        "function": {
+        "command": {
             group: link
             contains: [
-                {include: "function_head"}
-                {include: "function_body"}
+                {include: "command_head"}
+                {include: "command_body"}
             ]
         }
         "theory": {
@@ -81,13 +81,13 @@
             style: "brace"
             childrenStyle: "theory"
             contains: [
-                {include: "function"}
+                {include: "command"}
                 {include: "new_line"}
                 {include: "comment"}
             ]
         }
         "all": [
-            {include: "function"}
+            {include: "command"}
             {include: "new_line"}
             {include: "comment"}
             {include: "theory"}
