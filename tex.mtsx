@@ -9,15 +9,15 @@
     comment: {startsWith: "%", addToContains: false}
     defines: [
         "special_characters": /[#$%^&_{}~\\]/
-        // "unescaping": {match: {include: "special_characters"}}
-        // "escaping": {match: /\\/ + include("special_characters"), 0:"default"}
         "comment": {match: /(?<!\\)%.*?\n/, 0:"comment"}
         "new_line": {match: /\\\\(?!\n)/, 0:"escaped"}
-        // "valid_escaper": /(?<!\\)\\/
-        //unused
-        "special_command_name": keywordsToRegex("start end ")
+        "length": {
+            number: "10|F"
+            iSuffixes: "pt|mm|cm|in|ex|em|mu|sp"
+            fSuffixes: "pt|mm|cm|in|ex|em|mu|sp"
+        }
         "command_[]": {
-            start: {match: /(?<=\w)\[/}
+            start: {match: /(?<=\w|\*)\[/}
             end: {match: /\]/}
             style: "bracket"
             childrenStyle: "default"
@@ -26,7 +26,7 @@
             ]
         }
         "command_{}": {
-            start: {match: /(?<=\w|\]|\})\{/}
+            start: {match: /(?<=\w|\*|\]|\})\{/}
             end: {match: /\}/}
             style: "brace"
             childrenStyle: "default"
@@ -41,23 +41,19 @@
             ]
         }
         "command_head": {match: /\\\w+?(?=\W)/, 0: "escaped"}
-        "command_body": {
-            group: link
-            contains: [
-                {
-                    group: select
-                    contains: [
-                        {include: "command_[]"}
-                        {include: "command_{}"}
-                    ]
-                }
-                {include: "command_{}"}
-            ]
-        }
+        "command_body": [
+            {include: "command_{}"}
+            {include: "command_[]"}
+            {match: /\*/, 0: "escaped"}
+        ]
         "command": {
             group: link
             contains: [
                 {include: "command_head"}
+                {include: "command_body"}
+                {include: "command_body"}
+                {include: "command_body"}
+                {include: "command_body"}
                 {include: "command_body"}
             ]
         }
@@ -91,6 +87,7 @@
             {include: "new_line"}
             {include: "comment"}
             {include: "theory"}
+            {include: "length"}
         ]
     ]
     contains: [{include: "all"}]
