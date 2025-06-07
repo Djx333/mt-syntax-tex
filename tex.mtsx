@@ -1,5 +1,5 @@
 {
-    name: ["TeX (LaTeX, etc.)", ".tex"]
+    name: ["TeX (LaTeX, etc.)", ".tex", ".sty"]
     styles: [
         "brace", #6E59D9, #9383E2
         "escaped", #3F6EC6, #6791E0, @B
@@ -10,19 +10,17 @@
     defines: [
         "special_characters": /[#$%^&_{}~\\]/
         "comment": {match: /(?<!\\)%.*?\n/, 0:"comment"}
-        "new_line": {match: /\\\\(?!\n)/, 0:"escaped"}
-        "length": {
-            number: "10|F"
-            iSuffixes: "pt|mm|cm|in|ex|em|mu|sp"
-            fSuffixes: "pt|mm|cm|in|ex|em|mu|sp"
-        }
+        "new_line": {match: /\\\\/, 0:"escaped"}
+        "length": {match: /\d+?(\.\d+?)?(pt|mm|cm|in|ex|em|mu|sp)/, 0:"number"}
         "command_[]": {
-            start: {match: /(?<=\w|\*)\[/}
+            start: {match: /(?<=(\w|\}|\*)\s?)\[/}
             end: {match: /\]/}
             style: "bracket"
             childrenStyle: "default"
             contains: [
                 {match: /\\\]/}
+                {include: "all"}
+                {include: "length"}
             ]
         }
         "command_{}": {
@@ -35,16 +33,33 @@
                 {
                     start: {match: /(?<!\\)\{/}
                     end: {match: /(?<!\\)\}/}
-                    contains: [{include: "all"}]
+                    contains: [
+                        {include: "all"}
+                        {include: "length"}
+                    ]
                 }
                 {include: "all"}
+                {include: "length"}
             ]
         }
-        "command_head": {match: /\\\w+?(?=\W)/, 0: "escaped"}
+        // "command_head": {match: /\\\w+?(?=\W)/, 0: "escaped", 1: "meta"}
+        // "command_@": {match: /(@\w*?)*}
+        "command_head": {
+            start: {match: /\\/}
+            end: {match: /(?<!\\)(?=\W)/}
+            style: "escaped"
+            mustMatchEnd: true
+            contains: [
+                {match: /@(\w+?)?(?=\W)/, 0: "meta"}
+                <EndMatcher>
+                {match: /\s/} => Fail
+                {match: /(?<=\\)(\(|\)|\[|\]|\{|\})/} => FAIL
+            ]
+        }
         "command_body": [
             {include: "command_{}"}
             {include: "command_[]"}
-            {match: /\*/, 0: "escaped"}
+            {match: /\*/, 0: "meta"}
         ]
         "command": {
             group: link
@@ -57,37 +72,68 @@
                 {include: "command_body"}
             ]
         }
-        "theory": {
-            start: {
-                group: select
-                contains: [
-                    {match: /(?<!\\)\$\$?/}
-                    {match: /\\\(/}
-                    {match: /\\\[/}
-                ]
-            }
-            end: {
-                group: select
-                contains: [
-                    {match: /(?<!\\)\$\$?/}
-                    {match: /\\\)/}
-                    {match: /\\\]/}
-                ]
-            }
+        // "theory": {
+            // start: {
+                // group: select
+                // contains: [
+                    // {match: /(?<!\\)\$\$?/}
+                    // {match: /\\\(/}
+                    // {match: /\\\[/}
+                // ]
+            // }
+            // end: {
+                // group: select
+                // contains: [
+                    // {match: /(?<!\\)\$\$?/}
+                    // {match: /\\\)/}
+                    // {match: /\\\]/}
+                // ]
+            // }
+            // style: "brace"
+            // childrenStyle: "theory"
+            // contains: [
+                // {include: "command"}
+                // {include: "new_line"}
+                // {include: "comment"}
+            // ]
+        // }
+        "theory_$": {
+            start: {match: /(?<!\\)\$\$?/}
+            end: {match: /(?<!\\)\$\$?/}
             style: "brace"
             childrenStyle: "theory"
             contains: [
-                {include: "command"}
-                {include: "new_line"}
-                {include: "comment"}
+                {include: "all"}
             ]
         }
+        "theory_()": {
+            start: {match: /\\\(/}
+            end: {match: /\\\)/}
+            style: "brace"
+            childrenStyle: "theory"
+            contains: [
+                {include: "all"}
+            ]
+        }
+        "theory_[]": {
+            start: {match: /\\\[/}
+            end: {match: /\\\]/}
+            style: "brace"
+            childrenStyle: "theory"
+            contains: [
+                {include: "all"}
+            ]
+        }
+        "theory": [
+            {include: "theory_$"}
+            {include: "theory_()"}
+            {include: "theory_[]"}
+        ]
         "all": [
             {include: "command"}
             {include: "new_line"}
             {include: "comment"}
             {include: "theory"}
-            {include: "length"}
         ]
     ]
     contains: [{include: "all"}]
