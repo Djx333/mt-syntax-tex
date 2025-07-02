@@ -1,3 +1,7 @@
+// MT2 Highlighter for TeX, LaTeX, etc.
+// Copyright (c) Djx333, 2025
+// See Djx333/mt-syntax-tex on github.com for details
+// This file is licensed under the GPL v3.0
 {
     name: ["TeX (LaTeX, etc.)", ".tex", ".sty"]
     styles: [
@@ -11,7 +15,7 @@
         "special_characters": /[#$%^&_{}~\\]/
         "comment": {match: /(?<!\\)%.*?\n/, 0:"comment"}
         "new_line": {match: /\\\\/, 0:"escaped"}
-        "length": {match: /\d+?(\.\d+?)?(pt|mm|cm|in|ex|em|mu|sp)/, 0:"number"}
+        "length": {match: /\d+?(?:\.\d+?)?(?:pt|mm|cm|in|ex|em|mu|sp)/, 0:"number"}
         "command_[]": {
             start: {match: /(?<=(\w|\}|\*)\s?)\[/}
             end: {match: /\]/}
@@ -42,66 +46,42 @@
                 {include: "length"}
             ]
         }
-        // "command_head": {match: /\\\w+?(?=\W)/, 0: "escaped", 1: "meta"}
-        // "command_@": {match: /(@\w*?)*}
         "command_head": {
-            start: {match: /\\/}
-            end: {match: /(?<!\\)(?=\W)/}
+            start: {match: /(?<!\\)\\/}
+            end: {match: /(?<!\\)\b/}
             style: "escaped"
-            mustMatchEnd: true
+            // mustMatchEnd: true
+            // it seems useless
             contains: [
-                {match: /@(\w+?)?(?=\W)/, 0: "meta"}
+                {match: /@(?:\w+?)?(?=\W)/, 0: "meta"}
                 <EndMatcher>
                 {match: /\s/} => Fail
-                {match: /(?<=\\)(\(|\)|\[|\]|\{|\})/} => FAIL
+                {match: /(?<=\\)(?:\(|\)|\[|\]|\{|\})/} => FAIL
             ]
         }
-        "command_body": [
-            {include: "command_{}"}
-            {include: "command_[]"}
-            {match: /\*/, 0: "meta"}
-        ]
+        "command_body": {
+            start: {match: /(?<!\\)\s?(?=\*|\[|\{)/}
+            end: {match: /(?<=[^\\][\*\]\}])/}
+            contains: [
+                {include: "command_{}"}
+                {include: "command_[]"}
+                {match: /\*/, 0: "meta"}
+                <EndMatcher>
+            ]
+        }
         "command": {
             group: link
             contains: [
                 {include: "command_head"}
                 {include: "command_body"}
-                {include: "command_body"}
-                {include: "command_body"}
-                {include: "command_body"}
-                {include: "command_body"}
             ]
         }
-        // "theory": {
-            // start: {
-                // group: select
-                // contains: [
-                    // {match: /(?<!\\)\$\$?/}
-                    // {match: /\\\(/}
-                    // {match: /\\\[/}
-                // ]
-            // }
-            // end: {
-                // group: select
-                // contains: [
-                    // {match: /(?<!\\)\$\$?/}
-                    // {match: /\\\)/}
-                    // {match: /\\\]/}
-                // ]
-            // }
-            // style: "brace"
-            // childrenStyle: "theory"
-            // contains: [
-                // {include: "command"}
-                // {include: "new_line"}
-                // {include: "comment"}
-            // ]
-        // }
         "theory_$": {
             start: {match: /(?<!\\)\$\$?/}
             end: {match: /(?<!\\)\$\$?/}
             style: "brace"
             childrenStyle: "theory"
+            mustMatchEnd: true
             contains: [
                 {include: "all"}
             ]
