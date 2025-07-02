@@ -12,7 +12,9 @@
     ]
     comment: {startsWith: "%", addToContains: false}
     defines: [
-        "special_characters": /[#$%^&_{}~\\]/
+        "tab": {match: /&/, 0: "bracket"}
+        "escaped_characters": {match: /\\[#$%&~_^{}`|<>]/, 0: "escaped"}
+        // note that the character ~_^ SHOULD have their OWN special commands then
         "comment": {match: /(?<!\\)%.*?\n/, 0:"comment"}
         "new_line": {match: /\\\\/, 0:"escaped"}
         "length": {match: /\d+?(?:\.\d+?)?(?:pt|mm|cm|in|ex|em|mu|sp)/, 0:"number"}
@@ -56,7 +58,7 @@
                 {match: /@(?:\w+?)?(?=\W)/, 0: "meta"}
                 <EndMatcher>
                 {match: /\s/} => Fail
-                {match: /(?<=\\)(?:\(|\)|\[|\]|\{|\})/} => FAIL
+                {match: /(?<=\\)(?:\(|\)|\[|\]|\{|\})/} => Fail
             ]
         }
         "command_body": {
@@ -112,6 +114,8 @@
         "all": [
             {include: "command"}
             {include: "new_line"}
+            {include: "tab"}
+            {include: "escaped_characters"}
             {include: "comment"}
             {include: "theory"}
         ]
